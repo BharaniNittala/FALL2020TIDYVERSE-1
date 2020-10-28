@@ -2,10 +2,10 @@ My analysis includs analysing the sales of video games all around the world, I u
 
 Any additional analysis is welcome.
 =======
-Name: Bharani Nittala
-Analysis : COVID Mortality Rate vs COVID Case Density in the US States
-Vignette: ggplot2 and dplyr
-File name: Assignment TidyVerse(Bharani)
+- Name: Bharani Nittala
+- Analysis : COVID Mortality Rate vs COVID Case Density in the US States
+- Vignette: ggplot2 and dplyr
+- File name: Assignment TidyVerse(Bharani)
 
 =======
 
