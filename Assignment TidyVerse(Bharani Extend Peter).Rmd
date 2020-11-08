@@ -1,0 +1,151 @@
+---
+title: 'Assignment: Tidyverse CREATE Assignment (Extending Peter)'
+author: "Bharani Nittala"
+date: "`r Sys.Date()`"
+output:
+  openintro::lab_report: default
+  pdf_document: default
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+    toc: yes
+    toc_float: yes
+  word_document:
+    toc: yes
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Assignment
+
+In this assignment, you’ll practice collaborating around a code project with GitHub.  You could consider our collective work as building out a book of examples on how to use TidyVerse functions.
+
+GitHub repository:  https://github.com/acatlin/FALL2020TIDYVERSE
+
+https://data.fivethirtyeight.com/ datasets.
+
+https://www.kaggle.com/datasets datasets. 
+
+Your task here is to <b>Create an Example.</b>  Using one or more TidyVerse packages, and any dataset from fivethirtyeight.com or Kaggle, create a programming sample “vignette” that demonstrates how to use one or more of the capabilities of the selected TidyVerse package with your selected dataset. (25 points)
+
+# Loading of required libraries
+
+```{r}
+library(tidyverse)
+```
+
+# Dataset
+
+https://www.kaggle.com/ronitf/heart-disease-uci
+
+# File on Github
+
+https://raw.githubusercontent.com/petferns/607-week9/main/heart.csv
+
+# Capability1 readr::read_csv
+
+First lets try to read the CSV file from GitHub using the read_csv function
+
+```{r}
+heart <- read_csv("https://raw.githubusercontent.com/petferns/607-week9/main/heart.csv")
+head(heart)
+```
+
+read_csv function from tidyverse library is faster than the default read.csv from R. Let us verify the same
+
+```{r}
+system.time(d<-read.csv("https://raw.githubusercontent.com/petferns/607-week9/main/heart.csv"))
+```
+
+
+```{r message=FALSE}
+system.time(d<-read_csv("https://raw.githubusercontent.com/petferns/607-week9/main/heart.csv"))
+
+```
+
+# Capability 2 dplyr::filter
+
+As the name suggests we can filter the rows from the dataframe using the filter function.
+We apply the filter to heart dataframe based on age column
+
+```{r}
+filter(heart,age > 45)
+```
+
+# Capability 3 dplyr::select
+
+Just as we filtered the rows of a dataframe in the above example, we can use select function to filter columns of the dataframe. If you want only specific columns rather than the whole set of columns we can use select function
+
+```{r}
+select(heart,c("age","sex","chol"))
+```
+
+### Bharani Extends Peter's code
+
+First, I would like to add data dictionary to the hear dataset. Following are the columns in the dataset - 
+
+*age
+*sex
+*chest pain type (4 values)
+*resting blood pressure
+*serum cholestoral in mg/dl
+*fasting blood sugar > 120 mg/dl
+*resting electrocardiographic results (values 0,1,2)
+*maximum heart rate achieved
+*exercise induced angina
+*oldpeak = ST depression induced by exercise relative to rest
+*the slope of the peak exercise ST segment
+*number of major vessels (0-3) colored by flourosopy
+*thal: 3 = normal; 6 = fixed defect; 7 = reversable defect
+
+Then I will extend Peter's work with 2 additional functions 1) summarize and 2) ggplot
+
+```{r , message=FALSE,results="asis"}
+library(kableExtra)
+heart_summ <- heart %>% group_by(cp) %>% summarise(cholesterol = mean(chol),blood_sugar = mean(fbs), blood_pressure = mean(trestbps), maximum_heart_rate = mean(thalach)) %>%  arrange(desc(cp), .by_group = TRUE)
+heart_summ  %>% kable() %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T)
+
+```
+
+Based 0n the table, we can infer that chest pain type 0 has highest cholesterol rate and highest blood pressure.I am inclined to deduce that this chest pain type is most deadliest one.  
+
+
+Let's visualize the data on these parameters further using ggplot. I want to visualize the blood pressure metric by age group. For that, we first need to create age groups. 
+
+```{r , message=FALSE,results="asis"}
+
+heart <- heart %>% mutate(quartile = ntile(age, 4))
+
+```
+
+Now, let's visualize blood pressure by age group. We observe that blood pressure tends to go up with age, which is not surprising. The more interesting trends is how the variance increases within the two age groups in between
+
+```{r , message=FALSE,results="asis"}
+
+ggplot(heart, aes(x = quartile , y= trestbps)) + geom_point() + geom_smooth(method=lm)+
+   ggtitle("Blood pressure by age group") + 
+     theme(plot.title = element_text(lineheight=.8, face="bold"))
+
+```
+
+
+### Conclusion
+
+There is an unknown metric provided in the data, I tried interpreting it by plotting it against blood pressure. It appears to me that 0 is the normal case whereas as the metric goes from 0 to 3, the blood pressure increases indicating malfunctioning heart. This metric can be assumed as an indicator variable of heart condition. 
+
+```{r , message=FALSE,results="asis"}
+
+ggplot(heart, aes(x = thal , y= trestbps)) + geom_point() + geom_smooth(method=lm)+
+   ggtitle("Unknown metric by age group") + 
+     theme(plot.title = element_text(lineheight=.8, face="bold"))
+
+```
+
